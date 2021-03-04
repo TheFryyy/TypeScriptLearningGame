@@ -1,12 +1,13 @@
 import React from 'react';
 import './App.css';
-import { Board } from './Game'
+import Game from './Game'
 
 function App() {
 
   return (
     <div className="App">
-      <Board size={3}/>
+      <h1>Le but du jeu est de cliquer dans l'ordre sur les cases.</h1>
+      <div className="center-div"> <Game/> </div>
     </div>
   );
 }

@@ -9,14 +9,15 @@ interface SquareState {
   style?: string;
 }
 
-interface BoardProps {
-  size: number;
+interface GameProps {
+  
 }
 
-interface BoardState {
+interface GameState {
   board: Array<JSX.Element>;
   canTryAgain?: Boolean;
   status: string;
+  size: number;
 }
 
 /**
@@ -50,6 +51,10 @@ function getRandomListInRange(size: number) {
 
 }
 
+/**
+ * Represent a cell of the board
+ * 
+ */
 class Square extends React.Component<SquareProps, SquareState> {
   constructor(props: SquareProps) {
     super(props);
@@ -67,7 +72,7 @@ class Square extends React.Component<SquareProps, SquareState> {
   }
 }
 
-export class Board extends React.Component<BoardProps, BoardState> {
+class Game extends React.Component<GameProps, GameState> {
   lastClickedNumber: number;
   listSelectedSquares: Square[];
 
@@ -76,8 +81,8 @@ export class Board extends React.Component<BoardProps, BoardState> {
 
     this.lastClickedNumber = -1;
     this.listSelectedSquares = [];
-    let b: Array<JSX.Element> = this.initBoard();
-    this.state = {canTryAgain: false, board: b, status: "Playing..."};
+    let b: Array<JSX.Element> = this.initBoard(3);
+    this.state = {canTryAgain: false, board: b, status: "Playing...", size: 3};
   }
 
   /**
@@ -85,14 +90,15 @@ export class Board extends React.Component<BoardProps, BoardState> {
    * 
    * @returns the new board of type Array<JSX.Element>
    */
-  initBoard = () => {
-    let listNumber: number[] = getRandomListInRange(this.props.size*this.props.size);
+  initBoard = (s: number) => {
+    let listNumber: number[] = getRandomListInRange(s * s);
     let board: Array<JSX.Element> = [];
     this.lastClickedNumber = -1;
-    for(let i= 0; i <this.props.size; i++) {
+    this.reinitializeSquares();
+    for(let i= 0; i < s; i++) {
       let squares: Array<JSX.Element> = [];
-      for(let j=0; j < this.props.size; j++) {
-        let val = listNumber[i * this.props.size + j];
+      for(let j=0; j < s; j++) {
+        let val = listNumber[i * s + j];
         let square: JSX.Element = <Square key={val} value={val} onClick={(sqr:Square) => this.handleClick(sqr)}/>;
         squares.push(square);
       }
@@ -112,13 +118,14 @@ export class Board extends React.Component<BoardProps, BoardState> {
     
     sqr.setState({style: "selectedSquare"});
     this.listSelectedSquares.push(sqr);
+
     if(this.lastClickedNumber + 1 !== sqr.props.value) {
-      this.reinitializeBoard();
-      this.setState({canTryAgain: true, status: "You lost !"});
-    } else if(this.lastClickedNumber + 2 === this.props.size * this.props.size) {
-      this.reinitializeBoard();
-      this.setState({canTryAgain: true, status: "You Won !"});
-    } else {
+      this.setState({canTryAgain: true, status: "Tu as perdu !"});
+    } 
+    else if(this.lastClickedNumber + 2 === this.state.size * this.state.size) {
+      this.setState({canTryAgain: true, status: "Tu as gagné !"});
+    } 
+    else {
       this.lastClickedNumber++;
     }
   }
@@ -127,29 +134,40 @@ export class Board extends React.Component<BoardProps, BoardState> {
 /**
  * Restore squares state
  */
-  reinitializeBoard = () => {
+  reinitializeSquares = () => {
     this.listSelectedSquares.forEach(square => {
       square.setState({style: "square"});
     });
     this.listSelectedSquares.length=0;
   }
 
-  /**
-   * Create a new board
-   */
+
   tryAgain = () => {
-    let b: Array<JSX.Element> = this.initBoard();
+    let b: Array<JSX.Element> = this.initBoard(this.state.size);
     this.setState({canTryAgain: false, board: b});
+  }
+
+  handleChange = (event: any) => {
+    let s: number = event.target.value;
+    let b: Array<JSX.Element> = this.initBoard(s);
+    this.setState({size: s, board: b});
   }
 
   render() {
     return(
       <div className="game-board">
-        { this.state.board }
+        <label>
+          <b>Taille  </b>
+          <input type="number" value={this.state.size} onChange={this.handleChange} />
+        </label>
         {this.state.canTryAgain && <div>{this.state.status}</div>}
-        {this.state.canTryAgain && <button onClick={this.tryAgain}>Play Again</button>}
+        {this.state.canTryAgain && <button onClick={this.tryAgain}>Rejouer</button>}
+        <br/><br/>
+        { this.state.board }
       </div>
       
     );
   }
 }
+
+export default Game;

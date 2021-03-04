@@ -16,6 +16,10 @@ ol, ul {
   padding-left: 30px;
 }
 
+.center-div {
+  display: inline-block;
+}
+
 .board-row:after {
   clear: both;
   content: "";
